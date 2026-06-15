@@ -382,7 +382,7 @@ async function loadLogs(){
   let allText="";
   let latestText="";
 
-  for(let i=0;i<data.length;i++){
+for(let i=0;i<data.length;i++){
 
     const q=data[i];
     const eq=q.earthquake;
@@ -393,13 +393,19 @@ async function loadLogs(){
     else if(h.depth!=null)depth=h.depth+"km";
 
     const maxRaw=q.points.reduce((m,p)=>Math.max(m,p.scale||0),0);
-// 震度情報の整形（既存のbuildIntensityの出力を加工）
-    const formattedIntensity = intensity
+    const scaleMap={10:"1",20:"2",30:"3",40:"4",45:"5弱",50:"5強",55:"6弱",60:"6強",70:"7"};
+    let magStr = (typeof h.magnitude==="number") ? h.magnitude.toFixed(1) : "---";
+
+    // 1. まず元のbuildIntensityを実行して文字列を取得
+    const intensityRaw = buildIntensity(q.points);
+    
+    // 2. その文字列を整形
+    const formattedIntensity = intensityRaw
         .replace(/【震度(.*?)】/g, "▽震度$1")
         .replace(/■ (.*?)\n/g, "【$1】\n")
-        .replace(/  ・/g, ""); // 半角スペースの除去
+        .replace(/  ・/g, "");
 
-    // テキスト全体の組み立て
+    // 3. テキストを作成
     const text = 
 `《地震情報》
 ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
@@ -409,7 +415,19 @@ ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありまし
 ${getTsunamiDisplay()}
 
  ●各地の震度情報●
-${formattedIntensity}`; 
+${formattedIntensity}`;
+
+    if(i===0)latestText=text;
+
+    html+=
+    "<div class='card'>"+
+    "<div class='title'>"+(i+1)+"件目の地震</div>"+
+    "<button onclick='copyOne(this)'>コピー</button>"+
+    "<textarea readonly>"+text+"</textarea>"+
+    "</div>";
+
+    allText+=text+"\n";
+  }
 
     if(i===0)latestText=text;
 
