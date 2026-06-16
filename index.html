@@ -436,40 +436,6 @@ ${formattedIntensity}`;
     navigator.clipboard.writeText(latestText);
   }
 }
-
-    if(i===0)latestText=text;
-
-    html+=
-    "<div class='card'>"+
-    "<div class='title'>"+(i+1)+"件目の地震</div>"+
-    "<button onclick='copyOne(this)'>コピー</button>"+
-    "<textarea readonly>"+text+"</textarea>"+
-    "</div>";
-
-    allText+=text+"\n";
-  }
-
-    if(i===0)latestText=text;
-
-    html+=
-    "<div class='card'>"+
-    "<div class='title'>"+(i+1)+"件目の地震</div>"+
-    "<button onclick='copyOne(this)'>コピー</button>"+
-    "<textarea readonly>"+text+"</textarea>"+
-    "</div>";
-
-    allText+=text+"\n";
-  }
-
-  window.ALL_LOGS=allText.trimEnd();
-  document.getElementById("logs").innerHTML=html;
-
-  if (AUTO_COPY && latestText !== lastHash) {
-    lastHash = latestText;
-    navigator.clipboard.writeText(latestText);
-  }
-}
-
 function copyOne(btn){
   navigator.clipboard.writeText(btn.parentElement.querySelector("textarea").value);
 }
