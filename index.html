@@ -398,20 +398,28 @@ async function loadLogs(){
     const maxRaw = q.points.reduce((m,p)=>Math.max(m,p.scale||0),0);
     let magStr = (typeof h.magnitude==="number") ? h.magnitude.toFixed(1) : "---";
 
-    // 震度情報の構築と整形
-    const intensityRaw = buildIntensity(q.points);
-    const formattedIntensity = intensityRaw
-        .replace(/【震度(.*?)】/g, "▽震度$1")
-        .replace(/■ (.*?)\n/g, "【$1】\n")
-        .replace(/  ・/g, "");
+// 震度情報の整形
+const intensityRaw = buildIntensity(q.points);
+// buildIntensityの出力を加工して、指定の形式に合わせる
+const formattedIntensity = intensityRaw
+    .replace(/【震度(.*?)】/g, "▽震度$1")
+    .replace(/━━━━━━━━━━━\n/g, "") // 区切り線を削除
+    .replace(/■ (.*?)\n/g, "【$1】\n") // 【県名】の形式に
+    .replace(/  ・/g, ""); // リスト前の余分なスペース・点を削除
 
-    const text = 
+// 津波情報の文言変換
+let tsunamiMsg = getTsunamiDisplay();
+if (tsunamiMsg.includes("発表されていません")) {
+    tsunamiMsg = "この地震による津波の心配はありません。";
+}
+
+const text = 
 `《地震情報》
 ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
  最大震度: ${scaleMap[maxRaw]||"---"}
  M${magStr}
  震源の深さ: ${depth}
-${getTsunamiDisplay()}
+${tsunamiMsg}
 
  ●各地の震度情報●
 ${formattedIntensity}`;
