@@ -382,7 +382,7 @@ async function loadLogs(){
   let allText="";
   let latestText="";
 
-  // 震度変換用のマップ定義（ループの外に出すか、ループ内で定義）
+  // 震度変換用のマップ
   const scaleMap = {10:"1",20:"2",30:"3",40:"4",45:"5弱",50:"5強",55:"6弱",60:"6強",70:"7"};
 
   for(let i=0;i<data.length;i++){
@@ -398,22 +398,25 @@ async function loadLogs(){
     const maxRaw = q.points.reduce((m,p)=>Math.max(m,p.scale||0),0);
     let magStr = (typeof h.magnitude==="number") ? h.magnitude.toFixed(1) : "---";
 
-// 震度情報の整形
-const intensityRaw = buildIntensity(q.points);
-// buildIntensityの出力を加工して、指定の形式に合わせる
-const formattedIntensity = intensityRaw
-    .replace(/【震度(.*?)】/g, "▽震度$1")
-    .replace(/━━━━━━━━━━━\n/g, "") // 区切り線を削除
-    .replace(/■ (.*?)\n/g, "【$1】\n") // 【県名】の形式に
-    .replace(/  ・/g, ""); // リスト前の余分なスペース・点を削除
+    // 震度情報の整形ロジック
+    const intensityRaw = buildIntensity(q.points);
+    const formattedIntensity = intensityRaw
+        .split('\n')
+        .filter(line => line.trim() !== "" && !line.includes("━━━━━━━━━━━"))
+        .map(line => {
+            if (line.includes("【震度")) return line.replace(/【震度(.*?)】/, "▽震度$1");
+            if (line.includes("■ ")) return line.replace(/■ (.*)/, "【$1】");
+            return line.replace(/[  ]*・/g, " "); // 点を消してスペースでつなぐ
+        })
+        .join('\n');
 
-// 津波情報の文言変換
-let tsunamiMsg = getTsunamiDisplay();
-if (tsunamiMsg.includes("発表されていません")) {
-    tsunamiMsg = "この地震による津波の心配はありません。";
-}
+    // 津波情報の文言処理
+    let tsunamiMsg = getTsunamiDisplay();
+    if (tsunamiMsg.includes("発表されていません")) {
+        tsunamiMsg = "この地震による津波の心配はありません。";
+    }
 
-const text = 
+    const text = 
 `《地震情報》
 ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
  最大震度: ${scaleMap[maxRaw]||"---"}
