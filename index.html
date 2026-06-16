@@ -398,17 +398,20 @@ async function loadLogs(){
     const maxRaw = q.points.reduce((m,p)=>Math.max(m,p.scale||0),0);
     let magStr = (typeof h.magnitude==="number") ? h.magnitude.toFixed(1) : "---";
 
-    // 震度情報の整形ロジック
-    const intensityRaw = buildIntensity(q.points);
+const intensityRaw = buildIntensity(q.points);
     const formattedIntensity = intensityRaw
         .split('\n')
         .filter(line => line.trim() !== "" && !line.includes("━━━━━━━━━━━"))
         .map(line => {
-            if (line.includes("【震度")) return line.replace(/【震度(.*?)】/, "▽震度$1");
+            // 震度階級のヘッダー（▽震度X）の場合、前に空行を入れて改行を確保
+            if (line.includes("【震度")) return "\n" + line.replace(/【震度(.*?)】/, "▽震度$1");
+            // 県名（【県名】）
             if (line.includes("■ ")) return line.replace(/■ (.*)/, "【$1】");
-            return line.replace(/[  ]*・/g, " "); // 点を消してスペースでつなぐ
+            // 都市名の前の「・」を消して整列
+            return line.replace(/[  ]*・/g, " ");
         })
-        .join('\n');
+        .join('\n')
+        .trim(); // 最初の不要な改行を削除
 
     // 津波情報の文言処理
     let tsunamiMsg = getTsunamiDisplay();
