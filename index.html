@@ -391,9 +391,13 @@ async function loadLogs(){
     const eq=q.earthquake;
     const h=eq.hypocenter||{};
 
-    let depth="不明";
-    if(h.depth===0)depth="ごく浅い";
-    else if(h.depth!=null)depth=h.depth+"km";
+    // --- 変更後 ---
+　　　let depth="不明";
+　　　if(h.depth===0) depth="ごく浅い";
+　　　else if(h.depth!=null) depth=h.depth+"km";
+
+　　　// ここで「ごく浅い」の時は「約」をつけないロジックを追加
+　　　const depthDisplay = (depth === "ごく浅い") ? "ごく浅い" : "約" + depth;
 
     const maxRaw = q.points.reduce((m,p)=>Math.max(m,p.scale||0),0);
     let magStr = (typeof h.magnitude==="number") ? h.magnitude.toFixed(1) : "---";
