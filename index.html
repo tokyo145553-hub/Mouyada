@@ -412,7 +412,7 @@ const intensityRaw = buildIntensity(q.points);
             // 県名（【県名】）
             if (line.includes("■ ")) return line.replace(/■ (.*)/, "【$1】");
             // 都市名の前の「・」を消して整列
-            return line.replace(/[  ]*・/g, " ");
+            return line.replace(/[  ]*・/g, "");
         })
         .join('\n')
         .trim(); // 最初の不要な改行を削除
@@ -426,12 +426,12 @@ const intensityRaw = buildIntensity(q.points);
     const text = 
 `《地震情報》
 ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
- 最大震度: ${scaleMap[maxRaw]||"---"}
- M${magStr}
- 震源の深さ: ${depthDisplay}
+　最大震度: ${scaleMap[maxRaw]||"---"}
+　M${magStr}
+　震源の深さ:${depthDisplay}
 ${tsunamiMsg}
 
- ●各地の震度情報●
+　●各地の震度情報●
 ${formattedIntensity}`;
 
     if(i===0)latestText=text;
