@@ -187,6 +187,16 @@ textarea:hover{
 .copy-feedback.show{
   opacity:1;
 }
+
+.error-message{
+  color:#ff6b6b;
+  font-size:12px;
+  padding:8px;
+  background:#2a1a1a;
+  border-left:3px solid #ff6b6b;
+  border-radius:4px;
+  margin-top:8px;
+}
 </style>
 </head>
 
@@ -207,6 +217,7 @@ textarea:hover{
     <div class="button-group">
       <button onclick="loadLogs()">今すぐ更新</button>
       <button onclick="enableAutoCopy(event)">自動コピー</button>
+      <button onclick="copyAll()">全件コピー</button>
     </div>
 
     <div class="button-group-label">🌊 津波情報（手動選択）</div>
@@ -229,11 +240,25 @@ textarea:hover{
 <script>
 
 // =====================================================
-// ★ localStorage による津波設定の保存・復元
+// ★ localStorage による津波設定の保存・復元（エラーハンドリング付き）
 // =====================================================
 
+function safeLocalStorage(action, key, value) {
+  try {
+    if (action === "get") {
+      return localStorage.getItem(key);
+    } else if (action === "set") {
+      localStorage.setItem(key, value);
+      return true;
+    }
+  } catch (e) {
+    console.warn("localStorage unavailable:", e);
+    return null;
+  }
+}
+
 function initTsunamiMode(){
-  const saved = localStorage.getItem("tsunamiMode");
+  const saved = safeLocalStorage("get", "tsunamiMode");
   if(saved){
     tsunamiMode = saved;
   }
@@ -242,7 +267,7 @@ function initTsunamiMode(){
 
 function setTsunami(mode){
   tsunamiMode = mode;
-  localStorage.setItem("tsunamiMode", mode);
+  safeLocalStorage("set", "tsunamiMode", mode);
   updateTsunamiButtons();
   loadLogs();
 }
@@ -266,6 +291,7 @@ let tsunamiMode = "none";
 let ws = null;
 let pollingInterval = null;
 const WS_URL = "wss://api.p2pquake.net/v2/ws";
+const API_URL = "https://api.p2pquake.net/v2/history?codes=551&limit=5";
 
 // =====================================================
 // ★ ポーリング間隔を管理する関数
@@ -275,7 +301,7 @@ function updatePollingInterval() {
   if (pollingInterval) clearInterval(pollingInterval);
   
   const isConnected = ws && ws.readyState === WebSocket.OPEN;
-  const interval = isConnected ? 60000 : 1000;
+  const interval = isConnected ? 60000 : 5000;
   
   pollingInterval = setInterval(loadLogs, interval);
 }
@@ -289,6 +315,7 @@ function connectWebSocket(){
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
+      console.log("WebSocket connected");
       updateStatus();
       updatePollingInterval();
     };
@@ -305,16 +332,18 @@ function connectWebSocket(){
     };
 
     ws.onclose = () => {
+      console.log("WebSocket disconnected");
       updateStatus();
       updatePollingInterval();
-      setTimeout(connectWebSocket, 3000);
+      setTimeout(connectWebSocket, 5000);
     };
 
-    ws.onerror = () => {
-      console.log("WS error");
+    ws.onerror = (error) => {
+      console.log("WS error", error);
     };
   }catch(e){
     console.log("WS接続失敗", e);
+    updatePollingInterval();
   }
 }
 
@@ -329,7 +358,7 @@ function formatTimeOneLine(date){
 }
 
 function updateStatus(){
-  const wsStatus = ws && ws.readyState === WebSocket.OPEN ? "WS接続中" : "WS切断";
+  const wsStatus = (ws && ws.readyState === WebSocket.OPEN) ? "✓ WS接続中" : "✗ WS切断";
   document.getElementById("status").innerText = 
     "最終更新: " + formatTimeOneLine(new Date()) + " | " + wsStatus;
 }
@@ -523,8 +552,17 @@ async function loadLogs(){
   updateStatus();
 
   try{
-    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
+    const res = await fetch(API_URL);
+    
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
+    
     const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("No data received from API");
+    }
 
     let html = "";
     let allText = "";
@@ -556,12 +594,23 @@ async function loadLogs(){
 
     if (AUTO_COPY && latestText !== lastHash) {
       lastHash = latestText;
-      navigator.clipboard.writeText(latestText);
+      try {
+        await navigator.clipboard.writeText(latestText);
+      } catch (e) {
+        console.warn("Clipboard copy failed:", e);
+      }
     }
 
   }catch(e){
     console.error("Error loading logs:", e);
-    document.getElementById("logs").innerHTML = '<div class="card"><p style="color:#f00;">エラー: データの取得に失敗しました</p></div>';
+    document.getElementById("logs").innerHTML = `
+<div class="card">
+  <p style="color:#f00;">⚠ エラー: データの取得に失敗しました</p>
+  <div class="error-message">
+    ${e.message}<br>
+    <small>しばらく待ってから再度「今すぐ更新」ボタンをお試しください</small>
+  </div>
+</div>`;
   }
 }
 
@@ -574,12 +623,27 @@ function copyOne(btn){
     setTimeout(() => {
       feedback.classList.remove("show");
     }, 2000);
+  }).catch(err => {
+    console.error("Copy failed:", err);
+    const feedback = btn.nextElementSibling;
+    feedback.textContent = "✗ コピー失敗";
+    feedback.classList.add("show");
+    setTimeout(() => {
+      feedback.classList.remove("show");
+    }, 2000);
   });
 }
 
 function copyAll(){
-  navigator.clipboard.writeText(window.ALL_LOGS || "").then(() => {
-    alert("全件をコピーしました");
+  if (!window.ALL_LOGS) {
+    alert("データがまだ読み込まれていません");
+    return;
+  }
+  navigator.clipboard.writeText(window.ALL_LOGS).then(() => {
+    alert("全件をクリップボードにコピーしました");
+  }).catch(err => {
+    console.error("Copy failed:", err);
+    alert("コピーに失敗しました");
   });
 }
 
