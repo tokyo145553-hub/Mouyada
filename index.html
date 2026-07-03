@@ -206,7 +206,7 @@ textarea:hover{
     <div class="button-group-label">📡 更新制御</div>
     <div class="button-group">
       <button onclick="loadLogs()">今すぐ更新</button>
-      <button onclick="enableAutoCopy()">自動コピー</button>
+      <button onclick="enableAutoCopy(event)">自動コピー</button>
     </div>
 
     <div class="button-group-label">🌊 津波情報（手動選択）</div>
@@ -423,9 +423,9 @@ function getTsunamiDisplay(){
   return "この地震による津波の心配はありません。";
 }
 
-function enableAutoCopy(){
+function enableAutoCopy(evt){
   AUTO_COPY = !AUTO_COPY;
-  const btn = event.target;
+  const btn = evt.target;
   if(AUTO_COPY){
     btn.classList.add("active");
   } else {
