@@ -7,72 +7,185 @@
 
 <style>
 body{
-font-family:"Hiragino Sans","Segoe UI",sans-serif;
-background:#000;
-color:#fff;
-margin:0;
-padding:20px;
+  font-family:"Hiragino Sans","Segoe UI",sans-serif;
+  background:#0a0a0a;
+  color:#e0e0e0;
+  margin:0;
+  padding:20px;
 }
 
 #container{
-max-width:900px;
-margin:auto;
+  max-width:900px;
+  margin:auto;
+}
+
+.header-section{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin-bottom:20px;
+  gap:20px;
 }
 
 h1{
-font-size:28px;
-margin-bottom:20px;
-font-weight:600;
+  font-size:28px;
+  margin:0;
+  font-weight:600;
+  flex:1;
 }
 
-.card{
-background:#111;
-border-radius:14px;
-padding:20px;
-margin-bottom:25px;
-border:1px solid #333;
-box-shadow:0 4px 20px rgba(255,255,255,0.05);
+.tsunami-notice{
+  background:#1a1a1a;
+  border:1px solid #444;
+  border-radius:8px;
+  padding:12px 14px;
+  font-size:11px;
+  color:#999;
+  text-align:right;
+  line-height:1.5;
+  max-width:250px;
 }
 
-textarea{
-width:100%;
-height:300px;
-background:#000;
-color:#fff;
-border:none;
-padding:12px;
-border-radius:8px;
-resize:none;
-font-size:15px;
-line-height:1.7;
-font-family:Consolas,Menlo,monospace;
+.control-card{
+  background:#111;
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:25px;
+  border:1px solid #333;
+  box-shadow:0 4px 20px rgba(255,255,255,0.05);
+}
+
+.button-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:16px;
+}
+
+.button-group-label{
+  font-size:12px;
+  color:#888;
+  font-weight:600;
+  width:100%;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin-bottom:8px;
+  margin-top:12px;
+}
+
+.button-group-label:first-of-type{
+  margin-top:0;
 }
 
 button{
-background:#fff;
-color:#000;
-padding:8px 16px;
-border-radius:6px;
-border:none;
-cursor:pointer;
-font-weight:600;
-margin-right:10px;
-margin-bottom:5px;
+  background:#222;
+  color:#e0e0e0;
+  padding:8px 14px;
+  border-radius:6px;
+  border:1px solid #444;
+  cursor:pointer;
+  font-weight:500;
+  font-size:13px;
+  transition:all 0.2s;
 }
 
 button:hover{
-background:#ccc;
+  background:#333;
+  border-color:#555;
 }
 
-.title{
-font-size:20px;
-margin-bottom:10px;
+button.active{
+  background:#fff;
+  color:#000;
+  border-color:#fff;
 }
 
 #status{
-font-size:12px;
-color:#aaa;
-margin-top:5px;
+  font-size:12px;
+  color:#666;
+  margin-top:12px;
+  padding:8px 0;
+  border-top:1px solid #333;
+}
+
+.card{
+  background:#111;
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:20px;
+  border:1px solid #333;
+  box-shadow:0 4px 20px rgba(255,255,255,0.05);
+}
+
+.card-title{
+  font-size:14px;
+  color:#999;
+  margin-bottom:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+
+.card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+textarea{
+  width:100%;
+  min-height:200px;
+  background:#0a0a0a;
+  color:#e0e0e0;
+  border:1px solid #333;
+  padding:14px;
+  border-radius:8px;
+  resize:none;
+  font-size:14px;
+  line-height:1.8;
+  font-family:Consolas,Menlo,monospace;
+  box-sizing:border-box;
+  transition:border-color 0.2s;
+}
+
+textarea:focus{
+  outline:none;
+  border-color:#555;
+}
+
+textarea:hover{
+  border-color:#444;
+}
+
+.copy-button{
+  background:#333;
+  color:#e0e0e0;
+  padding:6px 12px;
+  border-radius:6px;
+  border:1px solid #555;
+  cursor:pointer;
+  font-weight:500;
+  font-size:12px;
+  transition:all 0.2s;
+}
+
+.copy-button:hover{
+  background:#444;
+  border-color:#666;
+}
+
+.copy-feedback{
+  display:inline-block;
+  margin-left:8px;
+  color:#888;
+  font-size:11px;
+  opacity:0;
+  transition:opacity 0.3s;
+}
+
+.copy-feedback.show{
+  opacity:1;
 }
 </style>
 </head>
@@ -81,188 +194,117 @@ margin-top:5px;
 
 <div id="container">
 
-<h1>地震情報（過去5回分）</h1>
+  <div class="header-section">
+    <h1>地震情報（過去5回分）</h1>
+    <div class="tsunami-notice">
+      ⓘ 津波情報は手動で<br>選択してください
+    </div>
+  </div>
 
-<div class="card">
+  <div class="control-card">
 
-<button onclick="copyAll()">全件コピー</button>
-<button onclick="loadLogs()">今すぐ更新</button>
-<button onclick="enableAutoCopy()">自動コピー</button>
+    <div class="button-group-label">📡 更新制御</div>
+    <div class="button-group">
+      <button onclick="loadLogs()">今すぐ更新</button>
+      <button onclick="enableAutoCopy()">自動コピー</button>
+    </div>
 
-<br>
+    <div class="button-group-label">🌊 津波情報（手動選択）</div>
+    <div class="button-group">
+      <button onclick="setTsunami('none')" class="active" id="tsunami-none">なし</button>
+      <button onclick="setTsunami('forecast')" id="tsunami-forecast">予報</button>
+      <button onclick="setTsunami('advisory')" id="tsunami-advisory">注意報</button>
+      <button onclick="setTsunami('warning')" id="tsunami-warning">警報</button>
+      <button onclick="setTsunami('major')" id="tsunami-major">大津波警報</button>
+    </div>
 
-<button onclick="setTsunami('auto')">自動</button>
-<button onclick="setTsunami('none')">なし</button>
-<button onclick="setTsunami('forecast')">予報</button>
-<button onclick="setTsunami('advisory')">注意報</button>
-<button onclick="setTsunami('warning')">警報</button>
-<button onclick="setTsunami('major')">大津波警報</button>
+    <div id="status">更新待機中...</div>
 
-<div id="status">更新待機中...</div>
+  </div>
 
-</div>
-
-<div id="logs"></div>
+  <div id="logs"></div>
 
 </div>
 
 <script>
 
-let AUTO_COPY = false;
-let lastHash = "";
+// =====================================================
+// ★ localStorage による津波設定の保存・復元
+// =====================================================
+
+function initTsunamiMode(){
+  const saved = localStorage.getItem("tsunamiMode");
+  if(saved){
+    tsunamiMode = saved;
+  }
+  updateTsunamiButtons();
+}
+
+function setTsunami(mode){
+  tsunamiMode = mode;
+  localStorage.setItem("tsunamiMode", mode);
+  updateTsunamiButtons();
+  loadLogs();
+}
+
+function updateTsunamiButtons(){
+  ["none", "forecast", "advisory", "warning", "major"].forEach(m => {
+    const btn = document.getElementById("tsunami-" + m);
+    if(btn){
+      btn.classList.toggle("active", tsunamiMode === m);
+    }
+  });
+}
 
 // =====================================================
-// ★ WebSocket（追加のみ・既存処理には一切干渉しない）
+// グローバル変数
 // =====================================================
+
+let AUTO_COPY = false;
+let lastHash = "";
+let tsunamiMode = "none";
 let ws = null;
 const WS_URL = "wss://api.p2pquake.net/v2/ws";
 
+// =====================================================
+// ★ WebSocket（最新データ受信時に再読み込み）
+// =====================================================
+
 function connectWebSocket(){
-
   try{
-
     ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
-      document.getElementById("status").innerText += " | WS接続中";
+      updateStatus();
     };
 
     ws.onmessage = (event) => {
       try{
         const data = JSON.parse(event.data);
-
-        // 地震データ受信時のみトリガー
         if(data && data.earthquake){
-
-          // ★重要：既存処理を一切壊さない
           loadLogs();
         }
-
       }catch(e){
         console.log("WS parse error", e);
       }
     };
 
     ws.onclose = () => {
-
-      document.getElementById("status").innerText += " | WS切断";
-
-      // 再接続（既存ロジックに影響なし）
+      updateStatus();
       setTimeout(connectWebSocket, 3000);
     };
 
     ws.onerror = () => {
       console.log("WS error");
     };
-
   }catch(e){
     console.log("WS接続失敗", e);
   }
 }
 
 // =====================================================
-// ★ ここから下は「完全にあなたの元コードそのまま」
+// ユーティリティ
 // =====================================================
-
-let tsunamiMode = "auto";
-
-let tsunamiText = "取得中...";
-let tsunamiTimer = 0;
-
-async function fetchTsunami(){
-  try{
-    const res = await fetch("https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml");
-    const xmlText = await res.text();
-
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(xmlText, "text/xml");
-
-    const entries = xml.getElementsByTagName("entry");
-
-    if(!entries || entries.length === 0){
-      tsunamiText = "津波情報取得失敗";
-      return;
-    }
-
-    const latestTitle =
-      entries[0].getElementsByTagName("title")[0]?.textContent || "";
-
-    if(latestTitle.includes("津波") && latestTitle.includes("解除")){
-      tsunamiText = "現在、津波に関する情報は発表されていません";
-      return;
-    }
-
-    const priority = ["大津波警報","津波警報","津波注意報","津波予報"];
-    let found = null;
-
-    for(const p of priority){
-      for(let i=0;i<entries.length;i++){
-        const title = entries[i].getElementsByTagName("title")[0]?.textContent || "";
-        const summary = entries[i].getElementsByTagName("summary")[0]?.textContent || "";
-        if((title + summary).includes(p)){
-          found = p;
-          break;
-        }
-      }
-      if(found) break;
-    }
-
-    if(found === "大津波警報"){
-      tsunamiText = "〈⚠ 大津波警報〉\n現在大津波警報を発表中です";
-    }
-    else if(found === "津波警報"){
-      tsunamiText = "〈⚠ 津波警報〉\n現在津波警報を発表中です";
-    }
-    else if(found === "津波注意報"){
-      tsunamiText = "〈津波注意報〉\n現在津波注意報を発表中です";
-    }
-    else if(found === "津波予報"){
-      tsunamiText = "〈津波予報〉\n現在津波予報を発表中です";
-    }
-    else{
-      tsunamiText = "現在、津波に関する情報は発表されていません";
-    }
-
-  }catch(e){
-    tsunamiText = "津波情報取得失敗";
-  }
-}
-
-function setTsunami(mode){
-  tsunamiMode = mode;
-}
-
-function getTsunamiDisplay(){
-
-  if(tsunamiMode === "none"){
-    return "現在、津波に関する情報は発表されていません";
-  }
-  if(tsunamiMode === "forecast"){
-    return "〈津波予報〉\n現在津波予報を発表中です";
-  }
-  if(tsunamiMode === "advisory"){
-    return "〈津波注意報〉\n現在津波注意報を発表中です";
-  }
-  if(tsunamiMode === "warning"){
-    return "〈⚠ 津波警報〉\n現在津波警報を発表中です";
-  }
-  if(tsunamiMode === "major"){
-    return "〈⚠ 大津波警報〉\n現在大津波警報を発表中です";
-  }
-
-  return tsunamiText;
-}
-
-function enableAutoCopy(){
-  AUTO_COPY = true;
-}
-
-function formatTimeBlock(label, date){
-  const d = new Date(date);
-  return "■ "+label+"\n　"+
-    d.getFullYear()+"年"+(d.getMonth()+1)+"月"+d.getDate()+"日 "+
-    d.getHours()+"時"+String(d.getMinutes()).padStart(2,"0")+"分";
-}
 
 function formatTimeOneLine(date){
   const d = new Date(date);
@@ -270,9 +312,11 @@ function formatTimeOneLine(date){
          d.getHours()+"時"+String(d.getMinutes()).padStart(2,"0")+"分";
 }
 
-// =====================
-// ★ここも完全維持（削ってない）
-// =====================
+function updateStatus(){
+  const wsStatus = ws && ws.readyState === WebSocket.OPEN ? "WS接続中" : "WS切断";
+  document.getElementById("status").innerText = 
+    "最終更新: " + formatTimeOneLine(new Date()) + " | " + wsStatus;
+}
 
 function normalizeCityName(raw){
   if (!raw) return "不明";
@@ -314,7 +358,6 @@ function normalizePref(pref){
 }
 
 function buildIntensity(points){
-
   const cityMax = {};
 
   points.forEach(p => {
@@ -352,7 +395,6 @@ function buildIntensity(points){
 
     Object.keys(grouped[s]).sort().forEach(pref => {
       const cities = [...new Set(grouped[s][pref])];
-
       out += "■ " + pref + "\n";
       out += "  ・" + cities.join("　") + "\n\n";
     });
@@ -361,113 +403,177 @@ function buildIntensity(points){
   return out.trimEnd();
 }
 
-// =====================
-// メイン（変更なし）
-// =====================
-
-async function loadLogs(){
-
-  document.getElementById("status").innerText =
-    "最終更新: " + formatTimeOneLine(new Date());
-
-  if(Date.now() - tsunamiTimer > 10000){
-    await fetchTsunami();
-    tsunamiTimer = Date.now();
+function getTsunamiDisplay(){
+  if(tsunamiMode === "none"){
+    return "この地震による津波の心配はありません。";
+  }
+  if(tsunamiMode === "forecast"){
+    return "〈津波予報〉\n現在津波予報を発表中です";
+  }
+  if(tsunamiMode === "advisory"){
+    return "〈津波注意報〉\n現在津波注意報を発表中です";
+  }
+  if(tsunamiMode === "warning"){
+    return "〈⚠ 津波警報〉\n現在津波警報を発表中です";
+  }
+  if(tsunamiMode === "major"){
+    return "〈⚠ 大津波警報〉\n現在大津波警報を発表中です";
   }
 
-  const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
-  const data = await res.json();
+  return "この地震による津波の心配はありません。";
+}
 
-  let html="";
-  let allText="";
-  let latestText="";
+function enableAutoCopy(){
+  AUTO_COPY = !AUTO_COPY;
+  const btn = event.target;
+  if(AUTO_COPY){
+    btn.classList.add("active");
+  } else {
+    btn.classList.remove("active");
+  }
+}
 
-  // 震度変換用のマップ
-  const scaleMap = {10:"1",20:"2",30:"3",40:"4",45:"5弱",50:"5強",55:"6弱",60:"6強",70:"7"};
+// =====================================================
+// ★ issue type による判定とテキスト生成
+// =====================================================
 
-  for(let i=0;i<data.length;i++){
+function buildEarthquakeText(q, scaleMap){
+  const eq = q.earthquake;
+  const h = eq.hypocenter || {};
+  const latest = q.issue || {};
 
-    const q=data[i];
-    const eq=q.earthquake;
-    const h=eq.hypocenter||{};
+  let depth = "不明";
+  if(h.depth === 0) depth = "ごく浅い";
+  else if(h.depth != null) depth = h.depth + "km";
 
-    // --- 変更後 ---
-　　　let depth="不明";
-　　　if(h.depth===0) depth="ごく浅い";
-　　　else if(h.depth!=null) depth=h.depth+"km";
+  const depthDisplay = (depth === "ごく浅い") ? "ごく浅い" : "約" + depth;
 
-　　　// ここで「ごく浅い」の時は「約」をつけないロジックを追加
-　　　const depthDisplay = (depth === "ごく浅い") ? "ごく浅い" : "約" + depth;
+  const maxRaw = q.points.reduce((m,p) => Math.max(m, p.scale || 0), 0);
+  let magStr = (typeof h.magnitude === "number") ? h.magnitude.toFixed(1) : "---";
 
-    const maxRaw = q.points.reduce((m,p)=>Math.max(m,p.scale||0),0);
-    let magStr = (typeof h.magnitude==="number") ? h.magnitude.toFixed(1) : "---";
+  const intensityRaw = buildIntensity(q.points);
+  const formattedIntensity = intensityRaw
+    .split('\n')
+    .filter(line => line.trim() !== "" && !line.includes("━━━━━━━━━━━"))
+    .map(line => {
+      if (line.includes("【震度")) return "\n" + line.replace(/【震度(.*?)】/, "▽震度$1");
+      if (line.includes("■ ")) return line.replace(/■ (.*)/, "【$1】");
+      return line.replace(/[  ]*・/g, "");
+    })
+    .join('\n')
+    .trim();
 
-const intensityRaw = buildIntensity(q.points);
-    const formattedIntensity = intensityRaw
-        .split('\n')
-        .filter(line => line.trim() !== "" && !line.includes("━━━━━━━━━━━"))
-        .map(line => {
-            // 震度階級のヘッダー（▽震度X）の場合、前に空行を入れて改行を確保
-            if (line.includes("【震度")) return "\n" + line.replace(/【震度(.*?)】/, "▽震度$1");
-            // 県名（【県名】）
-            if (line.includes("■ ")) return line.replace(/■ (.*)/, "【$1】");
-            // 都市名の前の「・」を消して整列
-            return line.replace(/[  ]*・/g, "");
-        })
-        .join('\n')
-        .trim(); // 最初の不要な改行を削除
+  const tsunamiMsg = getTsunamiDisplay();
 
-    // 津波情報の文言処理
-    let tsunamiMsg = getTsunamiDisplay();
-    if (tsunamiMsg.includes("発表されていません")) {
-        tsunamiMsg = "この地震による津波の心配はありません。";
-    }
+  // ★ issue type の判定
+  const issueType = latest.type;
+  let text = "";
 
-    const text = 
-`《地震情報》
+  if(issueType === "ScalePrompt"){
+    // 震度速報
+    text = `《震度速報　最大震度${scaleMap[maxRaw] || "---"}》
 ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
-　最大震度: ${scaleMap[maxRaw]||"---"}
+${tsunamiMsg}`;
+
+  } else if(issueType === "Destination"){
+    // 震源速報
+    text = `《震源速報》
+${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
+　M${magStr}
+　震源の深さ:${depthDisplay}
+${tsunamiMsg}`;
+
+  } else {
+    // デフォルト: 地震情報
+    text = `《地震情報》
+${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
+　最大震度: ${scaleMap[maxRaw] || "---"}
 　M${magStr}
 　震源の深さ:${depthDisplay}
 ${tsunamiMsg}
 
 　●各地の震度情報●
 ${formattedIntensity}`;
-
-    if(i===0)latestText=text;
-
-    html+=
-    "<div class='card'>"+
-    "<div class='title'>"+(i+1)+"件目の地震</div>"+
-    "<button onclick='copyOne(this)'>コピー</button>"+
-    "<textarea readonly>"+text+"</textarea>"+
-    "</div>";
-
-    allText+=text+"\n";
   }
 
-  window.ALL_LOGS=allText.trimEnd();
-  document.getElementById("logs").innerHTML=html;
+  return text;
+}
 
-  if (AUTO_COPY && latestText !== lastHash) {
-    lastHash = latestText;
-    navigator.clipboard.writeText(latestText);
+// =====================================================
+// メイン処理
+// =====================================================
+
+async function loadLogs(){
+  updateStatus();
+
+  try{
+    const res = await fetch("https://api.p2pquake.net/v2/history?codes=551&limit=5");
+    const data = await res.json();
+
+    let html = "";
+    let allText = "";
+    let latestText = "";
+
+    const scaleMap = {10:"1",20:"2",30:"3",40:"4",45:"5弱",50:"5強",55:"6弱",60:"6強",70:"7"};
+
+    for(let i = 0; i < data.length; i++){
+      const q = data[i];
+      const text = buildEarthquakeText(q, scaleMap);
+
+      if(i === 0) latestText = text;
+
+      html += `
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">${i+1}件目の地震</div>
+    <button class="copy-button" onclick="copyOne(this)">コピー</button>
+    <span class="copy-feedback"></span>
+  </div>
+  <textarea readonly>${text}</textarea>
+</div>`;
+
+      allText += text + "\n";
+    }
+
+    window.ALL_LOGS = allText.trimEnd();
+    document.getElementById("logs").innerHTML = html;
+
+    if (AUTO_COPY && latestText !== lastHash) {
+      lastHash = latestText;
+      navigator.clipboard.writeText(latestText);
+    }
+
+  }catch(e){
+    console.error("Error loading logs:", e);
+    document.getElementById("logs").innerHTML = '<div class="card"><p style="color:#f00;">エラー: データの取得に失敗しました</p></div>';
   }
 }
+
 function copyOne(btn){
-  navigator.clipboard.writeText(btn.parentElement.querySelector("textarea").value);
+  const textarea = btn.closest(".card").querySelector("textarea");
+  navigator.clipboard.writeText(textarea.value).then(() => {
+    const feedback = btn.nextElementSibling;
+    feedback.textContent = "✓ コピーしました";
+    feedback.classList.add("show");
+    setTimeout(() => {
+      feedback.classList.remove("show");
+    }, 2000);
+  });
 }
 
 function copyAll(){
-  navigator.clipboard.writeText(window.ALL_LOGS||"");
+  navigator.clipboard.writeText(window.ALL_LOGS || "").then(() => {
+    alert("全件をコピーしました");
+  });
 }
 
-// =====================
+// =====================================================
 // 起動
-// =====================
+// =====================================================
 
+initTsunamiMode();
 loadLogs();
-setInterval(loadLogs,2000);
+setInterval(loadLogs, 2000);
 connectWebSocket();
 
 </script>
