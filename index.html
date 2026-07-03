@@ -264,7 +264,21 @@ let AUTO_COPY = false;
 let lastHash = "";
 let tsunamiMode = "none";
 let ws = null;
+let pollingInterval = null;
 const WS_URL = "wss://api.p2pquake.net/v2/ws";
+
+// =====================================================
+// ★ ポーリング間隔を管理する関数
+// =====================================================
+
+function updatePollingInterval() {
+  if (pollingInterval) clearInterval(pollingInterval);
+  
+  const isConnected = ws && ws.readyState === WebSocket.OPEN;
+  const interval = isConnected ? 60000 : 1000;
+  
+  pollingInterval = setInterval(loadLogs, interval);
+}
 
 // =====================================================
 // ★ WebSocket（最新データ受信時に再読み込み）
@@ -276,6 +290,7 @@ function connectWebSocket(){
 
     ws.onopen = () => {
       updateStatus();
+      updatePollingInterval();
     };
 
     ws.onmessage = (event) => {
@@ -291,6 +306,7 @@ function connectWebSocket(){
 
     ws.onclose = () => {
       updateStatus();
+      updatePollingInterval();
       setTimeout(connectWebSocket, 3000);
     };
 
@@ -479,20 +495,20 @@ ${tsunamiMsg}`;
     // 震源速報
     text = `《震源速報》
 ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
-　M${magStr}
-　震源の深さ:${depthDisplay}
+ 　M${magStr}
+ 　震源の深さ:${depthDisplay}
 ${tsunamiMsg}`;
 
   } else {
     // デフォルト: 地震情報
     text = `《地震情報》
 ${formatTimeOneLine(eq.time)}頃、${h.name || "不明"}で地震がありました。
-　最大震度: ${scaleMap[maxRaw] || "---"}
-　M${magStr}
-　震源の深さ:${depthDisplay}
+ 　最大震度: ${scaleMap[maxRaw] || "---"}
+ 　M${magStr}
+ 　震源の深さ:${depthDisplay}
 ${tsunamiMsg}
 
-　●各地の震度情報●
+ 　●各地の震度情報●
 ${formattedIntensity}`;
   }
 
@@ -573,7 +589,7 @@ function copyAll(){
 
 initTsunamiMode();
 loadLogs();
-setInterval(loadLogs, 2000);
+updatePollingInterval();
 connectWebSocket();
 
 </script>
