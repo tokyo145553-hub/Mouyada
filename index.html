@@ -351,7 +351,7 @@ function updatePollingInterval() {
   if (pollingInterval) clearInterval(pollingInterval);
   
   const isConnected = ws && ws.readyState === WebSocket.OPEN;
-  const interval = isConnected ? 60000 : 5000;
+  const interval = isConnected ? 60000 : 1000;
   
   pollingInterval = setInterval(loadLogs, interval);
 }
